@@ -61,9 +61,9 @@ class App extends Component{
   }
   componentDidMount(){
     this.timer = setInterval(this.progress, 20);
-    /* this.callApi()
+    this.callApi()
       .then(res => this.setState({customers : res}))//callApi를 한 후 res라는 곳 안에 return된 body 가 들어가고 그것이 customers에 저장된다.
-      .catch(err => console.log(err)); //에러 발생했을경우 console에 로그 출력 */
+      .catch(err => console.log(err)); //에러 발생했을경우 console에 로그 출력
   }
   //비동기적으로
   callApi = async () => {

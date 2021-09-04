@@ -1,7 +1,22 @@
+const fs = require('fs'); //파일을 읽을수 있게 하는 함수
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
 const port = process.env.port || 5000;
+
+const data = fs.readFileSync('./database.json');
+const config = JSON.parse(data);
+const mssql = require('mssql');
+
+
+mssql.connect(config, function(err){
+  if(err){
+    console.log(err);
+    console.log(config);
+    return console.error('error발생');
+  }
+  console.log('mssql 연결 완료');
+})
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:true}));
@@ -11,32 +26,27 @@ app.get('/api/hello', (req,res) => {
 });
 
 app.get('/api/customers', (req,res) => {
-    res.send([
-        {
-          'id' : 1,
-          'image' : 'https://placeimg.com/50/50/1',
-          'name' : '홍길동',
-          'birthday' : '930817',
-          'gender' : '남자',
-          'job' : '직장인'
-        },
-        {
-          'id' : 2,
-          'image' : 'https://placeimg.com/50/50/2',
-          'name' : '길동',
-          'birthday' : '930817',
-          'gender' : '남자',
-          'job' : '직장인'
-        },
-        {
-          'id' : 3,
-          'image' : 'https://placeimg.com/50/50/any',
-          'name' : '홍길',
-          'birthday' : '93081',
-          'gender' : '남',
-          'job' : '직장인'
-        }
-      ]);
+  var request = new mssql.Request();
+  request.stream = true;
+  request.query("select * from customer",
+  (err,rows) => {
+    if(err){
+      return console.log('query error')
+    }
+  });
+  var result = [];
+    request.on('error', function(err){
+        console.log(err); 
+    })
+    .on('row', (row) => {
+        result.push(row)
+    })
+    .on
+    ('done', () => { // 마지막에 실행되는 부분
+        console.log('result :', result)
+        res.send(result);
+        //res.render('list.ejs',{'posts' : result})
+    });
 });
 
 app.listen(port, () => console.log(`Listening on port ${port}`))
